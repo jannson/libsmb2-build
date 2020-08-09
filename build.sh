@@ -9,9 +9,6 @@ CMAKE_HOME=/projects/jdk/android/Sdk/cmake/3.10.2.4988404/bin
 CLASSPATH=.:$JAVA_HOME/lib:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
 PATH=$CMAKE_HOME:$JAVA_HOME/bin:$ANDROID_HOME/platform-tools:$PATH
 
-
-OPENSSL_DIR=$SCRIPTPATH/openssl-OpenSSL_1_1_1d-x86
-
 CURR=`pwd`
 CC=clang
 toolchains_path=$(python toolchains_path.py --ndk ${ANDROID_NDK_HOME})
