@@ -1,0 +1,6 @@
+libsmb2/build-arm
+libsmb2/build-arm64
+libsmb2/build-x86
+openssl-arm
+openssl-arm64
+openssl-x86
