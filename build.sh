@@ -47,6 +47,16 @@ case $SMB_TARGET in
     SMB2_BUILD=$CURR/libsmb2/build-x86
     SMB2_API=x86
     ;;
+  amd64)
+    architecture=android-x86_64
+    TARGET_OPENSSL=$CURR/openssl-amd64
+    if [ ! -d openssl-amd64 ]; then
+      tar -zxf openssl-1_1_1d.tar.gz
+      mv openssl-OpenSSL_1_1_1d openssl-amd64
+    fi
+    SMB2_BUILD=$CURR/libsmb2/build-amd64
+    SMB2_API=x86_64
+    ;; 
   *)
     ./build.sh arm|arm64|x86 supported only
     ;;
