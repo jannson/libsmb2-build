@@ -923,6 +923,12 @@ int smb2_echo_async(struct smb2_context *smb2,
  */
 int smb2_echo(struct smb2_context *smb2);
 
+struct smb2_shares* smb2_shares_find(char *smb_url, char *password);
+void smb2_shares_destroy(struct smb2_shares* shares);
+int smb2_shares_length(struct smb2_shares* shares);
+const char* smb2_shares_cstr(struct smb2_shares *shares, int i);
+void smb2_shares_destroy(struct smb2_shares* shares);
+
 #ifdef __cplusplus
 }
 #endif

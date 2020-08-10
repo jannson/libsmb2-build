@@ -216,6 +216,13 @@ struct smb2_context {
         int endianess;
 };
 
+struct smb2_shares {
+  char **paths;
+  int path_count;
+  int err;
+  int finish;
+};
+
 #define SMB2_MAX_PDU_SIZE 16*1024*1024
 
 struct smb2_pdu {

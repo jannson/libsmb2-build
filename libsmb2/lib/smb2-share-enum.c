@@ -31,6 +31,13 @@
 #include <stdlib.h>
 #endif
 
+#include <errno.h>
+#ifdef ESP_PLATFORM
+#include <sys/poll.h>
+#else
+#include <poll.h>
+#endif
+
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
@@ -172,4 +179,116 @@ smb2_share_enum_async(struct smb2_context *smb2,
         }
         
         return 0;
+}
+
+static void shared_se_cb(struct smb2_context *smb2, int status,
+                void *command_data, void *private_data)
+{
+        struct srvsvc_netshareenumall_rep *rep = command_data;
+        int i = 0;
+        struct smb2_shares* shares = (struct smb2_shares*)private_data;
+
+        if (status) {
+          shares->err = -10;
+          shares->finish = 1;
+          return;
+        }
+        shares->paths = calloc(rep->ctr->ctr1.count, sizeof(char*));
+        for (i = 0; i < rep->ctr->ctr1.count; i++) {
+            if (((rep->ctr->ctr1.array[i].type & 3) == SHARE_TYPE_DISKTREE) &&
+            (0 == (rep->ctr->ctr1.array[i].type & SHARE_TYPE_HIDDEN))) { 
+              shares->paths[shares->path_count] = strdup(rep->ctr->ctr1.array[i].name);
+              shares->path_count++;
+            }
+        }
+        smb2_free_data(smb2, rep);
+        shares->finish = 1;
+}
+
+struct smb2_shares* smb2_shares_find(char *smb_url, char *password)
+{
+        struct smb2_context *smb2 = NULL;
+        struct smb2_url *url = NULL;
+      	struct pollfd pfd;
+        struct smb2_shares* shares = calloc(1, sizeof(struct smb2_shares));
+
+	      smb2 = smb2_init_context();
+        if (smb2 == NULL) {
+          shares->err = -1;
+          goto SMB2_SHARE_FIN;
+        }
+
+        url = smb2_parse_url(smb2, smb_url);
+        if (url == NULL) {
+          shares->err = -2;
+          goto SMB2_SHARE_FIN;
+        }
+        if (url->user) {
+          smb2_set_user(smb2, url->user);
+        }
+        if (password) {
+          smb2_set_password(smb2, password);
+        }
+
+        smb2_set_security_mode(smb2, SMB2_NEGOTIATE_SIGNING_ENABLED);
+
+        if (smb2_connect_share(smb2, url->server, "IPC$", NULL) < 0) {
+          shares->err = -3;
+          goto SMB2_SHARE_FIN;
+        }
+
+        if (smb2_share_enum_async(smb2, shared_se_cb, shares) != 0) {
+          shares->err = -4;
+          goto SMB2_SHARE_FIN;
+        }
+
+        while (!shares->finish) {
+          pfd.fd = smb2_get_fd(smb2);
+          pfd.events = smb2_which_events(smb2);
+
+          if (poll(&pfd, 1, 1000) < 0) {
+            shares->err = -5;
+            goto SMB2_SHARE_FIN;
+          }
+          if (pfd.revents == 0) {
+              continue;
+          }
+          if (smb2_service(smb2, pfd.revents) < 0) {
+              break;
+          }
+	    }
+
+SMB2_SHARE_FIN:
+        if(NULL != smb2) {
+          smb2_disconnect_share(smb2);
+        }
+        if(NULL != url) {
+          smb2_destroy_url(url);
+        }
+        if(NULL != smb2) {
+          smb2_destroy_context(smb2);
+        }
+        return shares;
+}
+
+int smb2_shares_length(struct smb2_shares* shares) {
+  return shares->path_count;
+}
+
+const char* smb2_shares_cstr(struct smb2_shares *shares, int i) {
+  if (i >= shares->path_count) {
+    return NULL;
+  }
+  return shares->paths[i];
+}
+
+void smb2_shares_destroy(struct smb2_shares* shares) {
+  int i;
+  for(i = 0; i < shares->path_count; i++) {
+    free(shares->paths[i]);
+  }
+  if(NULL != shares->paths) {
+    free(shares->paths);
+  }
+  free(shares);
 }
