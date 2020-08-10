@@ -928,6 +928,7 @@ void smb2_shares_destroy(struct smb2_shares* shares);
 int smb2_shares_length(struct smb2_shares* shares);
 const char* smb2_shares_cstr(struct smb2_shares *shares, int i);
 void smb2_shares_destroy(struct smb2_shares* shares);
+int smb2_shares_err(struct smb2_shares* shares);
 
 #ifdef __cplusplus
 }

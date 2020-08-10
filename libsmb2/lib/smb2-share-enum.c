@@ -211,6 +211,9 @@ struct smb2_shares* smb2_shares_find(char *smb_url, char *password)
         struct smb2_url *url = NULL;
       	struct pollfd pfd;
         struct smb2_shares* shares = calloc(1, sizeof(struct smb2_shares));
+        if(NULL == shares) {
+          return NULL;
+        }
 
 	      smb2 = smb2_init_context();
         if (smb2 == NULL) {
@@ -271,6 +274,10 @@ SMB2_SHARE_FIN:
         return shares;
 }
 
+int smb2_shares_err(struct smb2_shares* shares) {
+  return shares->err;
+}
+
 int smb2_shares_length(struct smb2_shares* shares) {
   return shares->path_count;
 }
@@ -284,6 +291,9 @@ const char* smb2_shares_cstr(struct smb2_shares *shares, int i) {
 
 void smb2_shares_destroy(struct smb2_shares* shares) {
   int i;
+  if(NULL == shares) {
+    return;
+  }
   for(i = 0; i < shares->path_count; i++) {
     free(shares->paths[i]);
   }
