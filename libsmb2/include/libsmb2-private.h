@@ -224,6 +224,7 @@ struct smb2_context {
 
 struct smb2_shares {
   char **paths;
+  char *err_str;
   int path_count;
   int err;
   int finish;

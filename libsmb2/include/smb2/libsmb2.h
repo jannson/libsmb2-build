@@ -938,6 +938,7 @@ struct smb2_shares* smb2_shares_find(char *smb_url, char *password);
 void smb2_shares_destroy(struct smb2_shares* shares);
 int smb2_shares_length(struct smb2_shares* shares);
 const char* smb2_shares_cstr(struct smb2_shares *shares, int i);
+const char* smb2_shares_err_cstr(struct smb2_shares *shares);
 void smb2_shares_destroy(struct smb2_shares* shares);
 int smb2_shares_err(struct smb2_shares* shares);
 

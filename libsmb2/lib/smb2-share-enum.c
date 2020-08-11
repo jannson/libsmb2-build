@@ -240,6 +240,7 @@ struct smb2_shares* smb2_shares_find(char *smb_url, char *password)
 
         if (smb2_connect_share(smb2, url->server, "IPC$", NULL) < 0) {
           shares->err = -3;
+          shares->err_str = strdup(smb2_get_error(smb2));
           goto SMB2_SHARE_FIN;
         }
 
@@ -292,6 +293,10 @@ const char* smb2_shares_cstr(struct smb2_shares *shares, int i) {
   return shares->paths[i];
 }
 
+const char* smb2_shares_err_cstr(struct smb2_shares *shares) {
+  return shares->err_str;
+}
+
 void smb2_shares_destroy(struct smb2_shares* shares) {
   int i;
   if(NULL == shares) {
@@ -302,6 +307,9 @@ void smb2_shares_destroy(struct smb2_shares* shares) {
   }
   if(NULL != shares->paths) {
     free(shares->paths);
+  }
+  if(NULL != shares->err_str) {
+    free(shares->err_str);
   }
   free(shares);
 }

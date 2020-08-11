@@ -116,3 +116,5 @@ smb2_shares_length
 smb2_shares_cstr
 smb2_shares_destroy
 smb2_shares_err
+smb2_shares_err_cstr
+
