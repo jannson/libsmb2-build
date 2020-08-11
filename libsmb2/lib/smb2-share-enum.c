@@ -61,6 +61,8 @@
 #include <errno.h>
 #include <stdio.h>
 
+#include "compat.h"
+
 #include "smb2.h"
 #include "libsmb2.h"
 #include "libsmb2-dcerpc.h"

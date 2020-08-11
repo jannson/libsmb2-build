@@ -36,7 +36,7 @@
 #endif
 
 #ifdef HAVE_POLL_H
-#ifdef ESP_PLATFORM
+#if defined(ESP_PLATFORM)
 #include <sys/poll.h>
 #else
 #include <poll.h>
@@ -67,18 +67,27 @@
 #include <unistd.h>
 #endif
 
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+
 #include "portable-endian.h"
 #include <errno.h>
 #include <fcntl.h>
+
+#ifndef PS2_EE_PLATFORM
 #include <sys/socket.h>
+#endif
+
+#include "compat.h"
 
 #include "slist.h"
 #include "smb2.h"
 #include "libsmb2.h"
-#include "libsmb2-private.h"
 #include "smb3-seal.h"
+#include "libsmb2-private.h"
 
-#define MAX_URL_SIZE 256
+#define MAX_URL_SIZE 1024
 
 static int
 smb2_get_credit_charge(struct smb2_context *smb2, struct smb2_pdu *pdu)

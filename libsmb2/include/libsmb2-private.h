@@ -23,6 +23,11 @@
 #include "config.h"
 #endif
 
+#if PS2_EE_PLATFORM
+/* We need this for time_t */
+#include <time.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -36,6 +41,7 @@ extern "C" {
 #define MAX_ERROR_SIZE 256
 
 #define PAD_TO_32BIT(len) ((len + 0x03) & 0xfffffffc)
+#define PAD_TO_64BIT(len) ((len + 0x07) & 0xfffffff8)
 
 #define SMB2_SPL_SIZE 4
 #define SMB2_HEADER_SIZE 64

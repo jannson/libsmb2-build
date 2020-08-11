@@ -41,6 +41,8 @@
 
 #include <errno.h>
 
+#include "compat.h"
+
 #include "smb2.h"
 #include "libsmb2.h"
 #include "libsmb2-private.h"
@@ -49,12 +51,12 @@ static int
 smb2_encode_preauth_context(struct smb2_context *smb2, struct smb2_pdu *pdu)
 {
         uint8_t *buf;
-        int len, i;
+        int len, i, data_len;
         struct smb2_iovec *iov;
 
         /* Preauth integrity capability */
-        len = 8 + 38;
-        len = PAD_TO_32BIT(len);
+        data_len = PAD_TO_64BIT(38);
+        len = 8 + data_len;
         buf = malloc(len);
         if (buf == NULL) {
                 smb2_set_error(smb2, "Failed to allocate preauth context");
@@ -64,7 +66,7 @@ smb2_encode_preauth_context(struct smb2_context *smb2, struct smb2_pdu *pdu)
 
         iov = smb2_add_iovector(smb2, &pdu->out, buf, len, free);
         smb2_set_uint16(iov, 0, SMB2_PREAUTH_INTEGRITY_CAP);
-        smb2_set_uint16(iov, 2, 38);
+        smb2_set_uint16(iov, 2, data_len);
         smb2_set_uint16(iov, 8, 1);
         smb2_set_uint16(iov, 10, 32);
         smb2_set_uint16(iov, 12, SMB2_HASH_SHA_512);
@@ -79,11 +81,12 @@ static int
 smb2_encode_encryption_context(struct smb2_context *smb2, struct smb2_pdu *pdu)
 {
         uint8_t *buf;
-        int len;
+        int len, data_len;
         struct smb2_iovec *iov;
 
-        len = 12;
-        len = PAD_TO_32BIT(len);
+        data_len = PAD_TO_64BIT(4);
+        len = 8 + data_len;
+        len = PAD_TO_64BIT(len);
         buf = malloc(len);
         if (buf == NULL) {
                 smb2_set_error(smb2, "Failed to allocate encryption context");
@@ -93,7 +96,7 @@ smb2_encode_encryption_context(struct smb2_context *smb2, struct smb2_pdu *pdu)
 
         iov = smb2_add_iovector(smb2, &pdu->out, buf, len, free);
         smb2_set_uint16(iov, 0, SMB2_ENCRYPTION_CAP);
-        smb2_set_uint16(iov, 2, 4);
+        smb2_set_uint16(iov, 2, data_len);
         smb2_set_uint16(iov, 8, 1);
         smb2_set_uint16(iov, 10, SMB2_ENCRYPTION_AES_128_CCM);
 
@@ -225,11 +228,12 @@ smb2_parse_negotiate_contexts(struct smb2_context *smb2,
                                        "type 0x%04x", type);
                         return -1;
                 }
-                offset += (len + 3) & ~3;
+                offset += len;
                 if (offset > iov->len) {
                         smb2_set_error(smb2, "Bad len in negotiate context\n");
                         return -1;
                 }
+                offset = PAD_TO_64BIT(offset);
         }
 
         return 0;

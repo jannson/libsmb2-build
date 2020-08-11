@@ -56,12 +56,17 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
-#include <sys/socket.h>
 #include <time.h>
+
+#ifndef PS2_EE_PLATFORM
+#include <sys/socket.h>
+#endif
 
 #ifdef _WIN32
 #include "asprintf.h"
 #endif
+
+#include "compat.h"
 
 #include "sha.h"
 #include "sha-private.h"
@@ -2482,6 +2487,11 @@ smb2_disconnect_share_async(struct smb2_context *smb2,
         struct smb2_pdu *pdu;
 
         if (smb2 == NULL) {
+                return -EINVAL;
+        }
+
+        if (smb2->fd == -1) {
+                smb2_set_error(smb2, "connection is alreeady disconnected or was never connected");
                 return -EINVAL;
         }
 
