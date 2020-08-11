@@ -234,6 +234,7 @@ struct smb2_shares* smb2_shares_find(char *smb_url, char *password)
         if (password) {
           smb2_set_password(smb2, password);
         }
+        smb2_set_timeout(smb2, 6);
 
         smb2_set_security_mode(smb2, SMB2_NEGOTIATE_SIGNING_ENABLED);
 
